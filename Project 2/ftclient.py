@@ -27,51 +27,52 @@ def set_up_control(argv):
 	#server info from argument lines
 	serverHost = "127.0.0.1"
 	serverPort = argv[1]
-	#command = "-l" or "-g"
-	command = argv[2]
 	#creates client socket and connects to server
 	clientSocket = socket(AF_INET, SOCK_STREAM)
 	clientSocket.connect((serverHost, int(serverPort)))
-	return command, clientSocket, serverPort
+	return clientSocket
 
 
-def send_command(argv, clientSocket, command):
+def send_command_l(argv, clientSocket):
 	# "-l" sent to server to get directory displayed
-	if command == "-l":
-	    #assigns dataPort from argument line
-	    dataPort = argv[3]
-	    fileName = None
-	    #sends command to server so server knows to return directory
-	    clientSocket.send(command)
-	    #sleep delays messages getting received from server as 1 message
-	    sleep(.05)
-	    #port number data directory will be sent back on
-	    clientSocket.send(dataPort)
+	command = argv[2]
+	#assigns dataPort from argument line
+	dataPort = argv[3]
+	#sends command to server so server knows to return directory
+	clientSocket.send(command)
+	#sleep delays messages getting received from server as 1 message
+	sleep(.05)
+	#port number data directory will be sent back on
+	clientSocket.send(dataPort)
+	return dataPort
+	
+def send_command_g(argv, clientSocket):
 	# "-g" sent to server to receive requested file    
-	elif command == "-g":
-	    dataPort = argv[4]
-	    fileName = argv[3]
-	    #https://docs.python.org/2/library/os.path.html
-	    #checks current directory to see if file already exists
-	    #prints and error and program exits
-	    if os.path.isfile(fileName):
-	        print "file already in directory"
-	        exit()
-	    #if file doesn't exist, command is sent to server that a file
-	    #wants to be tranfered
-	    clientSocket.send(command)
-	    #sleep delays messages getting received from server as 1 message
-	    sleep(.05)
-	    #sends fileName to server
-	    clientSocket.send(fileName)
-	    sleep(.05)
-	    #sends port number file will be sent back on
-	    clientSocket.send(dataPort)
-	return dataPort, fileName
+	command = argv[2]
+	dataPort = argv[4]
+	fileName = argv[3]
+	#https://docs.python.org/2/library/os.path.html
+	#checks current directory to see if file already exists
+	#prints and error and program exits
+	if os.path.isfile(fileName):
+	    print "file already in directory"
+	    exit()
+	#if file doesn't exist, command is sent to server that a file
+	#wants to be tranfered
+	clientSocket.send(command)
+	#sleep delays messages getting received from server as 1 message
+	sleep(.05)
+	#sends fileName to server
+	clientSocket.send(fileName)
+	sleep(.05)
+	#sends port number file will be sent back on
+	clientSocket.send(dataPort)
+	return dataPort
 
 
-def set_up_data(serverHost, dataPort):
+def set_up_data(dataPort):
 	# create TCP welcoming socket
+	serverHost = "127.0.0.1"
 	dataSocket = socket(AF_INET, SOCK_STREAM)
 	dataSocket.bind((serverHost, int(dataPort)))
 
@@ -80,7 +81,7 @@ def set_up_data(serverHost, dataPort):
 
 	#connection is established
 	connectionSocket, addr = dataSocket.accept()
-	return connectionSocket, dataSocket
+	return connectionSocket
 
 def get_dir(connectionSocket):
 	print "Receiving directory structure from " + argv[1] + ":"   
@@ -123,22 +124,26 @@ def get_file(connectionSocket, fileName):
 
 
 def main():
-	serverHost = "127.0.0.1"
+	#command = "-l" or "-g"
+	command = argv[2]
 	check_arg_length(argv)
-	command, clientSocket, serverPort = set_up_control(argv)	
-	dataPort, fileName = send_command(argv, clientSocket, command)
-	connectionSocket, dataSocket = set_up_data(serverHost, dataPort)
+	clientSocket = set_up_control(argv)	
 
 	# receiving directory from server
 	if command == "-l":
-	    get_dir(connectionSocket)
+		dataPort = send_command_l(argv, clientSocket)
+		connectionSocket = set_up_data(dataPort)
+		get_dir(connectionSocket)
 
 	# receives file from directory
 	elif command == "-g":
+		fileName = argv[3]
+		dataPort = send_command_g(argv, clientSocket)
+		connectionSocket = set_up_data(dataPort)
 		get_file(connectionSocket, fileName)
 
 	#close all connections made
-	dataSocket.close()
+	
 	connectionSocket.close()
 	clientSocket.close()
 
