@@ -280,19 +280,7 @@ void sendFile(int dataSocket, char *dataPortChar, char *dataServer, char *fileNa
                 //fread puts whole file into fileBuffer
                 //https://www.tutorialspoint.com/c_standard_library/c_function_fread.htm
                 fread(fileBuffer, fileSize+1, 1, file);
-                //newBuffer takes contents of fileBuffer
-                char *newBuffer = fileBuffer;
-                //loops through while there is still data left from file
-                //https://stackoverflow.com/questions/11952898/c-send-and-receive-file
-                /*while (tempSize > 0){
-                    //sends chucks of file content. charRead is the amount of data sent                                
-                    charsRead = send(dataSocket, newBuffer, fileSize, 0);
-                    //charRead is subtracted from size of file
-                    tempSize -= charsRead;
-                     //newBuffer is incremented to new starting spot
-                    newBuffer += charsRead;
-                }  */ 
-                send(dataSocket, newBuffer, fileSize, 0);
+                send(dataSocket, fileBuffer, fileSize, 0);
                 printf("file transfer complete\n");
                 free(fileBuffer);
             }

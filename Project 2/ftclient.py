@@ -98,6 +98,7 @@ def get_dir(connectionSocket):
 def get_file(connectionSocket, fileName):
 	    #https://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data
 	    #data will hold file contents
+	    print "Receiving " + fileName + " from " + argv[1]
 	    data = ""
 	    #while loops through through to to assign chunks of file content
 	    # into variable part, and then appended to data 
@@ -115,7 +116,6 @@ def get_file(connectionSocket, fileName):
 	    #if file odes exits
 	    else:
 	        #open new file to write
-	        print "Receiving " + fileName + " from " + argv[1]
 	        newFile = open(fileName,"wb+")
 	        #writes contents of data variable into new file
 	        newFile.write(data)
