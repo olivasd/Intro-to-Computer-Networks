@@ -140,8 +140,7 @@ void getDir(int controlConnect){
     int dataSocket;   
     char dataServer[30];    
 
-    dataSocket = dataConnection(dataPortChar, dataServer);
-                   
+    dataSocket = dataConnection(dataPortChar, dataServer);                   
     sendDirectory(dataSocket, dataPortChar, dataServer);
 
 }
@@ -151,7 +150,6 @@ void getFile(int controlConnect){
     char buffer[BUFFSIZE];
     char dataPortChar[256];
     char fileName[50];
-
     memset(buffer, '\0', BUFFSIZE); 
     //gets file name from client, copies into fileName
     charsRead = recv(controlConnect, buffer, BUFFSIZE, 0);
@@ -176,10 +174,8 @@ void getFile(int controlConnect){
    char dataServer[30];    
 
    dataSocket = dataConnection(dataPortChar, dataServer);
-
    sendFile(dataSocket, dataPortChar, dataServer, fileName);
-    
-   
+      
 }
 
 int dataConnection(char *dataPortChar,char *dataServer){
@@ -261,7 +257,7 @@ void sendFile(int dataSocket, char *dataPortChar, char *dataServer, char *fileNa
     DIR *d;
     struct dirent *dir;
     struct stat st;
-    int fileSize;
+    long int fileSize;
     int charsRead;
     int found = 0;
     d = opendir(".");
@@ -276,10 +272,10 @@ void sendFile(int dataSocket, char *dataPortChar, char *dataServer, char *fileNa
                 stat(fileName, &st);
                 fileSize = st.st_size;
                 //fileBuffer is size of file + null terminator
-                char fileBuffer[fileSize + 1];
+                char* fileBuffer = malloc(fileSize + 1);
                 int tempSize = fileSize;
                 //opens file to be read into fileBuffer
-                FILE *file = fopen(fileName, "r");                            
+                FILE *file = fopen(fileName, "rb");                            
                 printf("Sending \"%s\" to %s:%s\n", fileName, dataServer, dataPortChar);
                 //fread puts whole file into fileBuffer
                 //https://www.tutorialspoint.com/c_standard_library/c_function_fread.htm
@@ -288,14 +284,17 @@ void sendFile(int dataSocket, char *dataPortChar, char *dataServer, char *fileNa
                 char *newBuffer = fileBuffer;
                 //loops through while there is still data left from file
                 //https://stackoverflow.com/questions/11952898/c-send-and-receive-file
-                while (tempSize > 0){
+                /*while (tempSize > 0){
                     //sends chucks of file content. charRead is the amount of data sent                                
                     charsRead = send(dataSocket, newBuffer, fileSize, 0);
                     //charRead is subtracted from size of file
                     tempSize -= charsRead;
                      //newBuffer is incremented to new starting spot
                     newBuffer += charsRead;
-                }   
+                }  */ 
+                send(dataSocket, newBuffer, fileSize, 0);
+                printf("file transfer complete\n");
+                free(fileBuffer);
             }
         }
         if(!found){
@@ -306,4 +305,4 @@ void sendFile(int dataSocket, char *dataPortChar, char *dataServer, char *fileNa
         }
     }
     closedir(d);
-}
+}f

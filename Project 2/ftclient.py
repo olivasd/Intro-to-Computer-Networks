@@ -115,8 +115,8 @@ def get_file(connectionSocket, fileName):
 	    #if file odes exits
 	    else:
 	        #open new file to write
-	        newFile = open(fileName,"w+")
 	        print "Receiving " + fileName + " from " + argv[1]
+	        newFile = open(fileName,"wb+")
 	        #writes contents of data variable into new file
 	        newFile.write(data)
 	        newFile.close()
